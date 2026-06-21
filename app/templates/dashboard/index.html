@@ -224,6 +224,23 @@
                 </div>
             </div>
 
+            <!-- AI Action Plan -->
+            {% if recommendations %}
+            <div class="glass-panel" style="grid-column: span 12; padding: 24px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%); border-color: rgba(139, 92, 246, 0.3);">
+                <h2 class="section-title" style="color: #fff; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.2rem;">✨</span> AI Recommended Action Plan
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 16px;">
+                    {% for rec in recommendations %}
+                    <div style="background: rgba(0,0,0,0.2); border-radius: var(--radius-md); padding: 16px; border-left: 3px solid var(--purple);">
+                        <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 1rem; color: #fff;">{{ rec.title }}</h3>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">{{ rec.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Health Score -->
             <div class="health-widget glass-panel">
                 <h2 class="section-title">Business Health</h2>
@@ -340,6 +357,29 @@
         </div>
     </main>
 </div>
+
+<!-- NLQ Chat FAB -->
+<button onclick="toggleChat()" style="position: fixed; bottom: 32px; right: 32px; width: 60px; height: 60px; border-radius: 50%; background: var(--purple); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4); font-size: 24px; z-index: 1000; display: flex; align-items: center; justify-content: center;">
+    ✨
+</button>
+
+<!-- Chat Window -->
+<div id="aiChatWindow" class="glass-panel" style="display: none; position: fixed; bottom: 110px; right: 32px; width: 350px; height: 450px; z-index: 1000; flex-direction: column; padding: 0;">
+    <div style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(139, 92, 246, 0.2); border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md);">
+        <h3 style="margin: 0; color: #fff; font-size: 1rem; display: flex; align-items: center; gap: 8px;">✨ Ask InsightDesk AI</h3>
+    </div>
+    <div id="chatMessages" style="flex-grow: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem;">
+        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; align-self: flex-start; max-width: 85%;">
+            Hello! I've analyzed your latest Root Cause details and Forecast. What would you like to know?
+        </div>
+    </div>
+    <div style="padding: 16px; border-top: 1px solid rgba(255,255,255,0.05);">
+        <form onsubmit="submitChat(event)" style="display: flex; gap: 8px;">
+            <input type="text" id="chatInput" placeholder="Ask about your data..." autocomplete="off" style="flex-grow: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 20px; outline: none; font-family: inherit; font-size: 0.9rem;">
+            <button type="submit" style="background: var(--teal); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold;">Ask</button>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -404,6 +444,56 @@
                 btnElem.disabled = false;
             }, 3000);
         }
+    }
+
+    function toggleChat() {
+        const chat = document.getElementById('aiChatWindow');
+        chat.style.display = chat.style.display === 'none' ? 'flex' : 'none';
+        if (chat.style.display === 'flex') {
+            document.getElementById('chatInput').focus();
+        }
+    }
+
+    async function submitChat(e) {
+        e.preventDefault();
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+        
+        const messages = document.getElementById('chatMessages');
+        
+        // Append user message
+        messages.innerHTML += `<div style="background: var(--purple); color: #fff; padding: 12px; border-radius: 8px; align-self: flex-end; max-width: 85%;">${msg}</div>`;
+        input.value = '';
+        messages.scrollTop = messages.scrollHeight;
+        
+        // Add loading indicator
+        const loadingId = 'load-' + Date.now();
+        messages.innerHTML += `<div id="${loadingId}" style="background: rgba(255,255,255,0.05); color: var(--text-muted); padding: 12px; border-radius: 8px; align-self: flex-start; max-width: 85%;">Thinking...</div>`;
+        messages.scrollTop = messages.scrollHeight;
+        
+        try {
+            const response = await fetch(`/dashboard/api/ai/ask`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({dataset_id: DATASET_ID, query: msg})
+            });
+            const data = await response.json();
+            
+            document.getElementById(loadingId).remove();
+            
+            if (response.ok) {
+                // simple markdown bolding to html
+                let formatted = data.answer.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                messages.innerHTML += `<div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; align-self: flex-start; max-width: 85%; line-height: 1.5;">${formatted}</div>`;
+            } else {
+                messages.innerHTML += `<div style="background: rgba(239, 68, 68, 0.2); color: var(--danger); padding: 12px; border-radius: 8px; align-self: flex-start; max-width: 85%;">Error: ${data.error}</div>`;
+            }
+        } catch (err) {
+            document.getElementById(loadingId).remove();
+            messages.innerHTML += `<div style="background: rgba(239, 68, 68, 0.2); color: var(--danger); padding: 12px; border-radius: 8px; align-self: flex-start; max-width: 85%;">Connection failed.</div>`;
+        }
+        messages.scrollTop = messages.scrollHeight;
     }
 </script>
 <script src="{{ url_for('static', filename='js/charts.js') }}"></script>

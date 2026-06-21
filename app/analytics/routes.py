@@ -62,6 +62,16 @@ def dashboard(dataset_id):
         from ..forecasting.engine import generate_forecast
         forecast = generate_forecast(dataset.id)
 
+    # Fetch or generate AI Recommendations
+    from ..models.insight import Insight
+    recommendation_insight = Insight.query.filter_by(dataset_id=dataset.id, insight_type='recommendation').order_by(Insight.generated_at.desc()).first()
+    
+    if recommendation_insight:
+        recommendations = recommendation_insight.content_json
+    else:
+        from ..ai.engine import generate_recommendations
+        recommendations = generate_recommendations(dataset.id)
+
     return render_template(
         'index.html',
         dataset=dataset,
@@ -70,7 +80,8 @@ def dashboard(dataset_id):
         health=health,
         anomalies=anomalies,
         latest_rca=latest_rca,
-        forecast=forecast
+        forecast=forecast,
+        recommendations=recommendations
     )
 
 
@@ -159,3 +170,24 @@ def trigger_rca_scan(dataset_id):
                 results.append(res)
                 
     return jsonify({'triggered': len(results), 'reports': results})
+
+@analytics_bp.route('/api/ai/ask', methods=['POST'])
+@login_required
+def ask_ai():
+    """Natural Language Query endpoint."""
+    from flask import request
+    data = request.get_json()
+    dataset_id = data.get('dataset_id')
+    query = data.get('query')
+    
+    if not dataset_id or not query:
+        return jsonify({'error': 'Missing dataset_id or query'}), 400
+
+    dataset = Dataset.query.get_or_404(dataset_id)
+    if dataset.user_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    from ..ai.engine import answer_nlq
+    answer = answer_nlq(dataset_id, query)
+    
+    return jsonify({'answer': answer})
