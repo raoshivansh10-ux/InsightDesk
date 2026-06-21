@@ -5,8 +5,8 @@ from flask_login import login_required, current_user
 from . import analytics_bp
 from .kpi_engine import get_kpis
 from .health_score import calculate_health_score
+from .anomaly_detector import detect_anomalies
 from ..models.dataset import Dataset
-
 
 @analytics_bp.route('/')
 @login_required
@@ -42,13 +42,17 @@ def dashboard(dataset_id):
     # Calculate KPIs
     kpis = get_kpis(dataset.id)
     health = calculate_health_score(kpis['growth_pct'])
+    
+    # Detect Anomalies
+    anomalies = detect_anomalies(dataset.id)
 
     return render_template(
         'index.html',
         dataset=dataset,
         datasets=datasets,
         kpis=kpis,
-        health=health
+        health=health,
+        anomalies=anomalies
     )
 
 

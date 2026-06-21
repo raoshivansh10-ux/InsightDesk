@@ -1,7 +1,7 @@
 """InsightDesk — Flask application factory."""
 
 import os
-from flask import Flask
+from flask import Flask, redirect, url_for, render_template
 from .config import config_by_name
 from .extensions import db, migrate, login_manager, csrf
 
@@ -40,5 +40,9 @@ def create_app(config_name=None):
     # Create tables in dev (migrations preferred in prod)
     with app.app_context():
         db.create_all()
+
+    @app.route('/')
+    def index():
+        return render_template('landing.html')
 
     return app

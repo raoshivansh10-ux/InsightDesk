@@ -242,6 +242,41 @@
                 </div>
             </div>
 
+            <!-- Anomalies Panel -->
+            <div class="chart-panel glass-panel" style="max-height: 400px; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 class="section-title" style="margin: 0;">Alerts & Anomalies</h2>
+                    <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger); padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;">
+                        {{ anomalies|length }} Found
+                    </span>
+                </div>
+                
+                {% if anomalies %}
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                    {% for anomaly in anomalies %}
+                        <div style="padding: 16px; border-radius: var(--radius-md); background: rgba(0,0,0,0.2); border-left: 4px solid {% if anomaly.severity == 'high' %}var(--danger){% elif anomaly.severity == 'medium' %}var(--warning){% else %}var(--info){% endif %};">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <strong style="color: #fff;">{{ anomaly.date }}</strong>
+                                <span style="font-size: 0.85rem; color: var(--text-secondary);">
+                                    {% if anomaly.type == 'positive' %}<span style="color: var(--success);">↑ Spiked</span>{% else %}<span style="color: var(--danger);">↓ Dropped</span>{% endif %}
+                                    {{ "%.1f"|format(anomaly.diff_pct|abs) }}%
+                                </span>
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--text-secondary); display: flex; justify-content: space-between;">
+                                <span>Actual: <strong>${{ "{:,.2f}".format(anomaly.actual_value) }}</strong> vs Expected: ${{ "{:,.2f}".format(anomaly.expected_value) }}</span>
+                                <span style="font-size: 0.8rem; padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 4px;">{{ anomaly.reason }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted);">
+                        <div style="font-size: 2rem; margin-bottom: 12px;">✅</div>
+                        <p>No anomalies detected in this dataset.</p>
+                    </div>
+                {% endif %}
+            </div>
+
             <!-- Revenue Trend Chart -->
             <div class="chart-panel glass-panel">
                 <h2 class="section-title">Revenue Trend</h2>
