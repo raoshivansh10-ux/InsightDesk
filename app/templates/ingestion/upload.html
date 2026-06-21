@@ -30,7 +30,7 @@
                     <div class="form-group flex-2">
                         <label for="file">Data File</label>
                         <div class="file-drop-zone" id="file-drop-zone">
-                            <input type="file" name="file" id="file-input" accept=".csv,.xlsx,.xls">
+                            <input type="file" name="file" id="file-input" accept=".csv,.xlsx,.xls" style="z-index: 10;">
                             <div class="drop-content">
                                 <span class="drop-icon">📊</span>
                                 <p class="drop-text">Drag & drop your CSV or XLSX file here</p>
@@ -91,11 +91,6 @@
     const fileInput = document.getElementById('file-input');
     const fileNameDisplay = document.getElementById('file-name-display');
 
-    dropZone.addEventListener('click', (e) => {
-        if (e.target !== fileInput) {
-            fileInput.click();
-        }
-    });
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         dropZone.classList.add('drag-over');
