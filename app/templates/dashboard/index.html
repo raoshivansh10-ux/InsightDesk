@@ -243,7 +243,7 @@
             </div>
 
             <!-- Anomalies Panel -->
-            <div class="chart-panel glass-panel" style="max-height: 400px; overflow-y: auto;">
+            <div class="glass-panel" style="grid-column: span 4; padding: 24px; display: flex; flex-direction: column; max-height: 400px; overflow-y: auto;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                     <h2 class="section-title" style="margin: 0;">Alerts & Anomalies</h2>
                     <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger); padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;">
@@ -264,11 +264,11 @@
                             </div>
                             <div style="font-size: 0.9rem; color: var(--text-secondary); display: flex; justify-content: space-between;">
                                 <span>Actual: <strong>${{ "{:,.2f}".format(anomaly.actual_value) }}</strong> vs Expected: ${{ "{:,.2f}".format(anomaly.expected_value) }}</span>
-                                <span style="font-size: 0.8rem; padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 4px;">{{ anomaly.reason }}</span>
                             </div>
-                            <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+                            <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.8rem; padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; color: var(--text-muted);">{{ anomaly.reason }}</span>
                                 <button class="btn btn-sm" style="font-size: 0.8rem; padding: 4px 12px; border-radius: 4px; border: 1px solid var(--accent-primary); background: rgba(99, 102, 241, 0.2); color: #fff; cursor: pointer;" onclick="analyzeRootCause({{ dataset.id }}, {{ anomaly.id }}, this)">
-                                    Analyze Root Cause
+                                    Analyze
                                 </button>
                             </div>
                             <div id="rca-{{ anomaly.id }}" style="display: none; margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 0.85rem;">
@@ -280,6 +280,44 @@
                     <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted);">
                         <div style="font-size: 2rem; margin-bottom: 12px;">✅</div>
                         <p>No anomalies detected in this dataset.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Root Cause Insights -->
+            <div class="glass-panel" style="grid-column: span 4; padding: 24px; display: flex; flex-direction: column; max-height: 400px; overflow-y: auto;">
+                <h2 class="section-title">Root Cause Insights</h2>
+                {% if latest_rca %}
+                    <div style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-secondary);">
+                        Explaining the <strong>{{ latest_rca.anomaly.date }}</strong> anomaly ({{ "%.1f"|format(latest_rca.anomaly.diff_pct|abs) }}% {% if latest_rca.anomaly.type == 'positive' %}spike{% else %}drop{% endif %} in {{ latest_rca.metric }}).
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem;">
+                        {% for c in latest_rca.contributors %}
+                            {% if c.type in ['possible_stockout', 'churn_risk'] %}
+                                {% set icon = '⚠️' if c.type == 'possible_stockout' else '🚪' %}
+                                {% set title = 'Inferred Stockout' if c.type == 'possible_stockout' else 'Churn Risk' %}
+                                <div style="display: flex; justify-content: space-between; padding: 10px; background: rgba(245, 158, 11, 0.1); border-left: 3px solid var(--warning); border-radius: 4px;">
+                                    <span>{{ icon }} <strong>{{ title }}</strong>: {{ c.dimension_value }}</span>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);">{{ c.confidence }}</span>
+                                </div>
+                            {% else %}
+                                {% set barColor = 'var(--success)' if c.delta_value > 0 else 'var(--danger)' %}
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <span style="flex: 1; text-transform: capitalize;">{{ c.dimension }}: <strong style="color: #fff;">{{ c.dimension_value }}</strong></span>
+                                    <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+                                        <span style="color: {{ barColor }}; font-weight: 600;">{{ "%.1f"|format(c.contribution_pct) }}%</span>
+                                        <div style="width: 60px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                                            <div style="width: {{ c.contribution_pct|abs if c.contribution_pct|abs <= 100 else 100 }}%; height: 100%; background: {{ barColor }}; float: {{ 'right' if c.delta_value > 0 else 'left' }};"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); text-align: center;">
+                        <p>No recent anomaly to explain.</p>
+                        <p style="font-size: 0.8rem; margin-top: 8px;">(Insights auto-generate when a significant alert fires)</p>
                     </div>
                 {% endif %}
             </div>

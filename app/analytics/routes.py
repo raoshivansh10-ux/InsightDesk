@@ -45,6 +45,15 @@ def dashboard(dataset_id):
     
     # Detect Anomalies
     anomalies = detect_anomalies(dataset.id)
+    
+    # Fetch or generate RCA for the most recent anomaly to display directly on dashboard
+    latest_rca = None
+    if anomalies:
+        from ..root_cause.engine import analyze_root_cause
+        latest_anomaly = anomalies[0]
+        latest_rca = analyze_root_cause(dataset.id, latest_anomaly['id'])
+        if latest_rca:
+            latest_rca['anomaly'] = latest_anomaly
 
     return render_template(
         'index.html',
@@ -52,7 +61,8 @@ def dashboard(dataset_id):
         datasets=datasets,
         kpis=kpis,
         health=health,
-        anomalies=anomalies
+        anomalies=anomalies,
+        latest_rca=latest_rca
     )
 
 
