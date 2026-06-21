@@ -70,3 +70,54 @@ def chart_data(dataset_id):
         'trend': kpis['chart_data'],
         'category': kpis['category_chart']
     })
+
+@analytics_bp.route('/api/root-cause/<int:dataset_id>/<int:anomaly_id>')
+@login_required
+def get_root_cause(dataset_id, anomaly_id):
+    """Fetch the Root Cause Analysis report for a specific anomaly."""
+    dataset = Dataset.query.get_or_404(dataset_id)
+    if dataset.user_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    from ..models.root_cause import RootCauseReport
+    from ..root_cause.engine import analyze_root_cause
+    
+    report = RootCauseReport.query.filter_by(anomaly_id=anomaly_id, dataset_id=dataset_id).first()
+    
+    if not report:
+        # Lazy evaluate if the report doesn't exist
+        analyze_root_cause(dataset_id, anomaly_id)
+        report = RootCauseReport.query.filter_by(anomaly_id=anomaly_id, dataset_id=dataset_id).first()
+
+    if not report:
+        return jsonify({'error': 'Report not found'}), 404
+
+    return jsonify({
+        'id': report.id,
+        'metric': report.metric,
+        'total_delta_pct': report.total_delta_pct,
+        'contributors': report.contributors_json
+    })
+
+@analytics_bp.route('/api/root-cause/<int:dataset_id>/scan', methods=['POST'])
+@login_required
+def trigger_rca_scan(dataset_id):
+    """Manually trigger an RCA scan for recent anomalies."""
+    dataset = Dataset.query.get_or_404(dataset_id)
+    if dataset.user_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    from ..models.anomaly import Anomaly
+    from ..root_cause.engine import analyze_root_cause
+
+    # Find the most recent anomaly without a report
+    anomalies = Anomaly.query.filter_by(dataset_id=dataset_id).order_by(Anomaly.detected_at.desc()).limit(5).all()
+    results = []
+    
+    for anomaly in anomalies:
+        if anomaly.severity in ['high', 'medium']:
+            res = analyze_root_cause(dataset_id, anomaly.id)
+            if res:
+                results.append(res)
+                
+    return jsonify({'triggered': len(results), 'reports': results})

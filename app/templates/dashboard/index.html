@@ -266,6 +266,13 @@
                                 <span>Actual: <strong>${{ "{:,.2f}".format(anomaly.actual_value) }}</strong> vs Expected: ${{ "{:,.2f}".format(anomaly.expected_value) }}</span>
                                 <span style="font-size: 0.8rem; padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 4px;">{{ anomaly.reason }}</span>
                             </div>
+                            <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+                                <button class="btn btn-sm" style="font-size: 0.8rem; padding: 4px 12px; border-radius: 4px; border: 1px solid var(--accent-primary); background: rgba(99, 102, 241, 0.2); color: #fff; cursor: pointer;" onclick="analyzeRootCause({{ dataset.id }}, {{ anomaly.id }}, this)">
+                                    Analyze Root Cause
+                                </button>
+                            </div>
+                            <div id="rca-{{ anomaly.id }}" style="display: none; margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 0.85rem;">
+                            </div>
                         </div>
                     {% endfor %}
                     </div>
@@ -301,6 +308,65 @@
 <script>
     // Pass dataset ID to JS
     const DATASET_ID = {{ dataset.id }};
+
+    async function analyzeRootCause(datasetId, anomalyId, btnElem) {
+        const rcaDiv = document.getElementById(`rca-${anomalyId}`);
+        const originalText = btnElem.innerText;
+        btnElem.innerText = 'Analyzing...';
+        btnElem.disabled = true;
+
+        try {
+            // First try to scan/trigger the RCA
+            await fetch(`/dashboard/api/root-cause/${datasetId}/scan`, { method: 'POST' });
+            
+            // Then fetch the specific report
+            const response = await fetch(`/dashboard/api/root-cause/${datasetId}/${anomalyId}`);
+            if (!response.ok) throw new Error('Report not found');
+            
+            const data = await response.json();
+            
+            let html = `<div style="margin-bottom: 8px; font-weight: 600; color: #fff;">Root Cause Breakdown:</div>`;
+            html += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+            
+            data.contributors.forEach(c => {
+                if (c.type === 'possible_stockout' || c.type === 'churn_risk') {
+                    // Candidate signal
+                    const icon = c.type === 'possible_stockout' ? '⚠️' : '🚪';
+                    const title = c.type === 'possible_stockout' ? 'Inferred Stockout' : 'Churn Risk';
+                    html += `<div style="display: flex; justify-content: space-between; padding: 8px; background: rgba(245, 158, 11, 0.1); border-left: 3px solid var(--warning); border-radius: 4px;">
+                        <span>${icon} <strong>${title}</strong>: ${c.dimension_value}</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">${c.confidence}</span>
+                    </div>`;
+                } else {
+                    // Waterfall contributor
+                    const barColor = c.delta_value > 0 ? 'var(--success)' : 'var(--danger)';
+                    const sign = c.delta_value > 0 ? '+' : '';
+                    html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span style="flex: 1; text-transform: capitalize;">${c.dimension}: <strong>${c.dimension_value}</strong></span>
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+                            <span>${c.contribution_pct}%</span>
+                            <div style="width: 60px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                                <div style="width: ${Math.min(Math.abs(c.contribution_pct), 100)}%; height: 100%; background: ${barColor}; float: ${c.delta_value > 0 ? 'right' : 'left'};"></div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+            });
+            
+            html += `</div>`;
+            rcaDiv.innerHTML = html;
+            rcaDiv.style.display = 'block';
+            btnElem.style.display = 'none'; // Hide button after success
+            
+        } catch (error) {
+            console.error('Error fetching RCA:', error);
+            btnElem.innerText = 'Analysis Failed';
+            setTimeout(() => {
+                btnElem.innerText = originalText;
+                btnElem.disabled = false;
+            }, 3000);
+        }
+    }
 </script>
 <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
