@@ -183,14 +183,26 @@
                 <p class="page-subtitle">Overview for <strong style="color:var(--accent-secondary)">{{ dataset.industry_type | title }}</strong> data</p>
             </div>
             
-            <select class="dataset-selector" onchange="window.location.href=this.value">
-                {% for ds in datasets %}
-                <option value="{{ url_for('analytics.dashboard', dataset_id=ds.id) }}" 
-                        {% if ds.id == dataset.id %}selected{% endif %}>
-                    {{ ds.original_filename }} ({{ ds.uploaded_at.strftime('%b %d') }})
-                </option>
-                {% endfor %}
-            </select>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <button id="btn-subscribe" class="btn btn-ghost" onclick="toggleSubscription({{ dataset.id }})">
+                    {% if is_subscribed %}
+                        🔔 Unsubscribe
+                    {% else %}
+                        🔕 Subscribe to Reports
+                    {% endif %}
+                </button>
+                <button class="btn btn-primary" onclick="sendReportNow({{ dataset.id }}, this)">
+                    ✉️ Send Report Now
+                </button>
+                <select class="dataset-selector" onchange="window.location.href=this.value">
+                    {% for ds in datasets %}
+                    <option value="{{ url_for('analytics.dashboard', dataset_id=ds.id) }}" 
+                            {% if ds.id == dataset.id %}selected{% endif %}>
+                        {{ ds.original_filename }} ({{ ds.uploaded_at.strftime('%b %d') }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
 
         <div class="dashboard-grid">
@@ -386,6 +398,56 @@
 <script>
     // Pass dataset ID to JS
     const DATASET_ID = {{ dataset.id }};
+
+    async function toggleSubscription(datasetId) {
+        try {
+            const btn = document.getElementById('btn-subscribe');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳...';
+            const res = await fetch('/dashboard/api/reports/subscribe', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({dataset_id: datasetId})
+            });
+            const data = await res.json();
+            if (res.ok) {
+                if (data.is_active) {
+                    btn.innerHTML = '🔔 Unsubscribe';
+                } else {
+                    btn.innerHTML = '🔕 Subscribe to Reports';
+                }
+            } else {
+                btn.innerHTML = originalText;
+                alert(data.error || 'Failed to update subscription');
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function sendReportNow(datasetId, btnElem) {
+        const originalText = btnElem.innerHTML;
+        btnElem.innerHTML = '⏳ Sending...';
+        btnElem.disabled = true;
+        try {
+            const res = await fetch('/dashboard/api/reports/send-now', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({dataset_id: datasetId})
+            });
+            if (res.ok) {
+                btnElem.innerHTML = '✅ Sent!';
+            } else {
+                btnElem.innerHTML = '❌ Failed';
+            }
+        } catch (e) {
+            btnElem.innerHTML = '❌ Error';
+        }
+        setTimeout(() => {
+            btnElem.innerHTML = originalText;
+            btnElem.disabled = false;
+        }, 3000);
+    }
 
     async function analyzeRootCause(datasetId, anomalyId, btnElem) {
         const rcaDiv = document.getElementById(`rca-${anomalyId}`);

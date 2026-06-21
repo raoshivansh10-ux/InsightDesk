@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>InsightDesk Weekly Digest</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            color: #374151;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .header {
+            background-color: #8b5cf6;
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section-title {
+            color: #111827;
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+        .card {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .anomaly-high { color: #dc2626; font-weight: bold; }
+        .anomaly-medium { color: #d97706; font-weight: bold; }
+        .anomaly-low { color: #4b5563; font-weight: bold; }
+        
+        .action-item {
+            margin-bottom: 12px;
+        }
+        .action-title {
+            font-weight: bold;
+            color: #8b5cf6;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #8b5cf6;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .footer {
+            background-color: #f9fafb;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>InsightDesk Digest</h1>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">{{ dataset.original_filename }}</p>
+        </div>
+        
+        <div class="content">
+            <p>Here is your automated business intelligence report for the week.</p>
+            
+            <h2 class="section-title">✨ AI Action Plan</h2>
+            {% if action_plan %}
+                <div class="card">
+                    {% for item in action_plan %}
+                    <div class="action-item">
+                        <div class="action-title">• {{ item.title }}</div>
+                        <div style="font-size: 14px; margin-top: 4px;">{{ item.description }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="font-size: 14px; color: #6b7280;">No AI recommendations available yet.</p>
+            {% endif %}
+
+            <h2 class="section-title">🚨 Recent Anomalies</h2>
+            {% if anomalies %}
+                {% for anomaly in anomalies %}
+                <div class="card" style="font-size: 14px;">
+                    <div class="anomaly-{{ anomaly.severity }}">[{{ anomaly.severity | upper }}] {{ anomaly.metric | capitalize }} Anomaly</div>
+                    <div style="margin-top: 4px;">{{ anomaly.message }}</div>
+                    <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Detected: {{ anomaly.detected_at.strftime('%Y-%m-%d') }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="font-size: 14px; color: #6b7280;">No recent anomalies detected.</p>
+            {% endif %}
+            
+            <div style="text-align: center;">
+                <a href="#" class="btn">View Live Dashboard</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>You received this email because you are subscribed to InsightDesk Weekly Reports.</p>
+        </div>
+    </div>
+</body>
+</html>

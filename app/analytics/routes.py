@@ -72,6 +72,11 @@ def dashboard(dataset_id):
         from ..ai.engine import generate_recommendations
         recommendations = generate_recommendations(dataset.id)
 
+    # Fetch subscription status
+    from ..models.report_subscription import ReportSubscription
+    subscription = ReportSubscription.query.filter_by(user_id=current_user.id, dataset_id=dataset.id).first()
+    is_subscribed = subscription.is_active if subscription else False
+
     return render_template(
         'index.html',
         dataset=dataset,
@@ -81,7 +86,8 @@ def dashboard(dataset_id):
         anomalies=anomalies,
         latest_rca=latest_rca,
         forecast=forecast,
-        recommendations=recommendations
+        recommendations=recommendations,
+        is_subscribed=is_subscribed
     )
 
 
@@ -191,3 +197,55 @@ def ask_ai():
     answer = answer_nlq(dataset_id, query)
     
     return jsonify({'answer': answer})
+
+@analytics_bp.route('/api/reports/subscribe', methods=['POST'])
+@login_required
+def toggle_subscription():
+    """Toggle email subscription for the dataset."""
+    from flask import request
+    data = request.get_json()
+    dataset_id = data.get('dataset_id')
+    
+    dataset = Dataset.query.get_or_404(dataset_id)
+    if dataset.user_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    from ..models.report_subscription import ReportSubscription
+    from ..extensions import db
+    
+    sub = ReportSubscription.query.filter_by(user_id=current_user.id, dataset_id=dataset_id).first()
+    if sub:
+        sub.is_active = not sub.is_active
+        db.session.commit()
+        return jsonify({'message': 'Subscription updated', 'is_active': sub.is_active})
+    else:
+        sub = ReportSubscription(
+            user_id=current_user.id,
+            dataset_id=dataset_id,
+            email=current_user.email,
+            is_active=True
+        )
+        db.session.add(sub)
+        db.session.commit()
+        return jsonify({'message': 'Subscribed successfully', 'is_active': True})
+
+
+@analytics_bp.route('/api/reports/send-now', methods=['POST'])
+@login_required
+def send_report_now():
+    """Immediately generate and send the report."""
+    from flask import request
+    data = request.get_json()
+    dataset_id = data.get('dataset_id')
+    
+    dataset = Dataset.query.get_or_404(dataset_id)
+    if dataset.user_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    from ..reporting.generator import generate_and_send_weekly_digest
+    success = generate_and_send_weekly_digest(dataset, current_user.email)
+    
+    if success:
+        return jsonify({'message': 'Report sent successfully'})
+    else:
+        return jsonify({'error': 'Failed to send report. Check configuration.'}), 500

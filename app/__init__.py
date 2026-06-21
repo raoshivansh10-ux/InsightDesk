@@ -39,7 +39,20 @@ def create_app(config_name=None):
 
     # Create tables in dev (migrations preferred in prod)
     with app.app_context():
+        from .models.dataset import Dataset
+        from .models.sales import SalesRecord
+        from .models.customer import Customer
+        from .models.anomaly import Anomaly
+        from .models.root_cause import RootCauseReport
+        from .models.forecast import Forecast
+        from .models.insight import Insight
+        from .models.report_subscription import ReportSubscription
         db.create_all()
+
+    # Start background scheduler if not in testing/cli mode
+    if not app.config.get('TESTING') and not os.environ.get('FLASK_SKIP_SCHEDULER'):
+        from .scheduler import start_scheduler
+        start_scheduler(app)
 
     @app.route('/')
     def index():

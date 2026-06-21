@@ -8,3 +8,4 @@ from .anomaly import Anomaly    # noqa: F401
 from .root_cause import RootCauseReport # noqa: F401
 from .forecast import Forecast  # noqa: F401
 from .insight import Insight    # noqa: F401
+from .report_subscription import ReportSubscription    # noqa: F401
