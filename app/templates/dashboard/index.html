@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — InsightDesk{% endblock %}
+
+{% block head %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* Dashboard-specific Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.kpi-row {
+    grid-column: span 12;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.kpi-card {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.kpi-title {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.kpi-delta {
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.kpi-delta.positive { color: var(--success); }
+.kpi-delta.negative { color: var(--danger); }
+.kpi-delta.neutral { color: var(--text-muted); }
+
+/* Health Score Widget */
+.health-widget {
+    grid-column: span 4;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.health-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 16px 0;
+    border: 8px solid rgba(255,255,255,0.05);
+    position: relative;
+}
+
+.health-circle.success { border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 0 30px rgba(16, 185, 129, 0.2); }
+.health-circle.info { border-color: rgba(6, 182, 212, 0.4); box-shadow: 0 0 30px rgba(6, 182, 212, 0.2); }
+.health-circle.warning { border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 0 30px rgba(245, 158, 11, 0.2); }
+.health-circle.danger { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); }
+
+.health-score-val {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.health-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 4px;
+    letter-spacing: 1px;
+}
+.health-label.success { color: var(--success); }
+.health-label.info { color: var(--accent-secondary); }
+.health-label.warning { color: var(--warning); }
+.health-label.danger { color: var(--danger); }
+
+.health-components {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+    text-align: left;
+}
+
+.hc-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 6px;
+}
+.hc-name { color: var(--text-secondary); }
+.hc-val { font-weight: 600; color: #fff; }
+
+/* Chart Panels */
+.chart-panel {
+    grid-column: span 8;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+.chart-container {
+    flex-grow: 1;
+    position: relative;
+    min-height: 300px;
+    width: 100%;
+}
+
+.secondary-chart {
+    grid-column: span 12;
+    padding: 24px;
+    min-height: 350px;
+}
+
+/* Header tweaks */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+.dataset-selector {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--glass-border);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    outline: none;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+    .health-widget, .chart-panel { grid-column: span 12; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-shell">
+    <nav class="top-nav glass-panel">
+        <div class="nav-left">
+            <div class="logo-icon">ID</div>
+            <span class="logo-text">InsightDesk</span>
+        </div>
+        <div class="nav-right">
+            <a href="{{ url_for('ingestion.upload') }}" class="btn btn-ghost btn-sm">+ Upload Data</a>
+            <span class="nav-user">{{ current_user.business_name or current_user.email }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm">Sign Out</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="dashboard-header">
+            <div>
+                <h1 class="page-title">Command Center</h1>
+                <p class="page-subtitle">Overview for <strong style="color:var(--accent-secondary)">{{ dataset.industry_type | title }}</strong> data</p>
+            </div>
+            
+            <select class="dataset-selector" onchange="window.location.href=this.value">
+                {% for ds in datasets %}
+                <option value="{{ url_for('analytics.dashboard', dataset_id=ds.id) }}" 
+                        {% if ds.id == dataset.id %}selected{% endif %}>
+                    {{ ds.original_filename }} ({{ ds.uploaded_at.strftime('%b %d') }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- KPIs Row -->
+            <div class="kpi-row">
+                <div class="kpi-card glass-panel">
+                    <span class="kpi-title">Total Revenue</span>
+                    <span class="kpi-value">${{ "{:,.2f}".format(kpis.total_revenue) }}</span>
+                    {% if kpis.growth_pct > 0 %}
+                        <span class="kpi-delta positive">↑ {{ "%.1f"|format(kpis.growth_pct) }}% vs first half</span>
+                    {% elif kpis.growth_pct < 0 %}
+                        <span class="kpi-delta negative">↓ {{ "%.1f"|format(kpis.growth_pct|abs) }}% vs first half</span>
+                    {% else %}
+                        <span class="kpi-delta neutral">— Flat</span>
+                    {% endif %}
+                </div>
+                
+                <div class="kpi-card glass-panel">
+                    <span class="kpi-title">Total Orders</span>
+                    <span class="kpi-value">{{ "{:,}".format(kpis.total_orders) }}</span>
+                </div>
+
+                <div class="kpi-card glass-panel">
+                    <span class="kpi-title">Top Product</span>
+                    <span class="kpi-value" style="font-size: 1.5rem; word-break: break-all;">{{ kpis.top_product or 'N/A' }}</span>
+                </div>
+
+                <div class="kpi-card glass-panel">
+                    <span class="kpi-title">Top Region</span>
+                    <span class="kpi-value" style="font-size: 1.5rem;">{{ kpis.top_region or 'N/A' }}</span>
+                </div>
+            </div>
+
+            <!-- Health Score -->
+            <div class="health-widget glass-panel">
+                <h2 class="section-title">Business Health</h2>
+                <div class="health-circle {{ health.color_class }}">
+                    <span class="health-score-val">{{ health.score }}</span>
+                    <span class="health-label {{ health.color_class }}">{{ health.label }}</span>
+                </div>
+                
+                <div class="health-components">
+                    {% for comp in health.components %}
+                    <div class="hc-item">
+                        <span class="hc-name">{{ comp.name }}</span>
+                        <span class="hc-val">{{ comp.value }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Revenue Trend Chart -->
+            <div class="chart-panel glass-panel">
+                <h2 class="section-title">Revenue Trend</h2>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Category Breakdown Chart -->
+            <div class="secondary-chart glass-panel">
+                <h2 class="section-title">Revenue by Category</h2>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Pass dataset ID to JS
+    const DATASET_ID = {{ dataset.id }};
+</script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

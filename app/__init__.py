@@ -34,6 +34,9 @@ def create_app(config_name=None):
     from .ingestion import ingestion_bp
     app.register_blueprint(ingestion_bp)
 
+    from .analytics import analytics_bp
+    app.register_blueprint(analytics_bp)
+
     # Create tables in dev (migrations preferred in prod)
     with app.app_context():
         db.create_all()
