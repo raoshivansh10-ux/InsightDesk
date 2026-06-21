@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Upload Data — InsightDesk{% endblock %}
+
+{% block body %}
+<div class="app-shell">
+    <nav class="top-nav glass-panel">
+        <div class="nav-left">
+            <div class="logo-icon">ID</div>
+            <span class="logo-text">InsightDesk</span>
+        </div>
+        <div class="nav-right">
+            <span class="nav-user">{{ current_user.business_name or current_user.email }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm">Sign Out</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="page-header">
+            <h1 class="page-title">Data Sources</h1>
+            <p class="page-subtitle">Upload your sales data to start generating insights.</p>
+        </header>
+
+        <!-- Upload Card -->
+        <section class="upload-card glass-panel">
+            <h2 class="section-title">Upload New Dataset</h2>
+            <form method="POST" enctype="multipart/form-data" class="upload-form" id="upload-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label for="file">Data File</label>
+                        <div class="file-drop-zone" id="file-drop-zone">
+                            <input type="file" name="file" id="file-input" accept=".csv,.xlsx,.xls">
+                            <div class="drop-content">
+                                <span class="drop-icon">📊</span>
+                                <p class="drop-text">Drag & drop your CSV or XLSX file here</p>
+                                <p class="drop-hint">or click to browse — max 50 MB</p>
+                            </div>
+                            <p class="file-name-display" id="file-name-display"></p>
+                        </div>
+                    </div>
+
+                    <div class="form-group flex-1">
+                        <label for="industry_type">Industry Template</label>
+                        <select name="industry_type" id="industry_type" class="form-input">
+                            <option value="generic">Generic</option>
+                            <option value="retail">Retail / E-commerce</option>
+                            <option value="saas">SaaS / Subscriptions</option>
+                            <option value="pharmacy">Pharmacy</option>
+                        </select>
+                        <span class="form-hint">Determines default KPIs and column mappings.</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="upload-btn">
+                    <span>Upload & Process</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- Existing Datasets -->
+        {% if datasets %}
+        <section class="datasets-section">
+            <h2 class="section-title">Your Datasets</h2>
+            <div class="datasets-grid">
+                {% for ds in datasets %}
+                <a href="{{ url_for('ingestion.dataset_detail', dataset_id=ds.id) }}" class="dataset-card glass-panel">
+                    <div class="ds-header">
+                        <span class="ds-icon">📁</span>
+                        <span class="ds-status status-{{ ds.status }}">{{ ds.status }}</span>
+                    </div>
+                    <h3 class="ds-name">{{ ds.original_filename }}</h3>
+                    <div class="ds-meta">
+                        <span>{{ ds.row_count | default(0) }} rows</span>
+                        <span>{{ ds.industry_type }}</span>
+                        <span>{{ ds.uploaded_at.strftime('%b %d, %Y') }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // File drag & drop UX
+    const dropZone = document.getElementById('file-drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const fileNameDisplay = document.getElementById('file-name-display');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            fileNameDisplay.textContent = e.dataTransfer.files[0].name;
+        }
+    });
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+            fileNameDisplay.textContent = fileInput.files[0].name;
+        }
+    });
+</script>
+{% endblock %}

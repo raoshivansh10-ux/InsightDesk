@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}{{ dataset.original_filename }} — InsightDesk{% endblock %}
+
+{% block body %}
+<div class="app-shell">
+    <nav class="top-nav glass-panel">
+        <div class="nav-left">
+            <div class="logo-icon">ID</div>
+            <span class="logo-text">InsightDesk</span>
+        </div>
+        <div class="nav-right">
+            <a href="{{ url_for('ingestion.upload') }}" class="btn btn-ghost btn-sm">← Back to Datasets</a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm">Sign Out</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="page-header">
+            <h1 class="page-title">{{ dataset.original_filename }}</h1>
+            <div class="header-badges">
+                <span class="ds-status status-{{ dataset.status }}">{{ dataset.status }}</span>
+                <span class="badge">{{ dataset.industry_type }}</span>
+                <span class="badge">{{ dataset.row_count }} rows</span>
+                <span class="badge">{{ dataset.uploaded_at.strftime('%b %d, %Y at %H:%M') }}</span>
+            </div>
+        </header>
+
+        <!-- Cleaning Report -->
+        {% if cleaning_report %}
+        <section class="cleaning-report glass-panel">
+            <h2 class="section-title">Cleaning Report</h2>
+            <div class="report-grid">
+                <div class="report-stat">
+                    <span class="stat-value">{{ cleaning_report.get('original_rows', 0) }}</span>
+                    <span class="stat-label">Original Rows</span>
+                </div>
+                <div class="report-stat">
+                    <span class="stat-value">{{ cleaning_report.get('final_rows', 0) }}</span>
+                    <span class="stat-label">Final Rows</span>
+                </div>
+                <div class="report-stat">
+                    <span class="stat-value">{{ cleaning_report.get('duplicates_removed', 0) }}</span>
+                    <span class="stat-label">Duplicates Removed</span>
+                </div>
+                <div class="report-stat">
+                    <span class="stat-value">{{ cleaning_report.get('date_parse_failures', 0) }}</span>
+                    <span class="stat-label">Date Parse Failures</span>
+                </div>
+            </div>
+
+            {% if cleaning_report.get('columns_mapped') %}
+            <div class="report-detail">
+                <h3>Columns Mapped</h3>
+                <div class="tag-list">
+                    {% for target, source in cleaning_report['columns_mapped'].items() %}
+                    <span class="tag">{{ source }} → {{ target }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if cleaning_report.get('nulls_filled') %}
+            <div class="report-detail">
+                <h3>Null Values Filled</h3>
+                <div class="tag-list">
+                    {% for col, count in cleaning_report['nulls_filled'].items() %}
+                    <span class="tag">{{ col }}: {{ count }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if cleaning_report.get('revenue_computed') %}
+            <div class="report-detail">
+                <span class="tag tag-info">Revenue computed from quantity × unit_price</span>
+            </div>
+            {% endif %}
+
+            {% if cleaning_report.get('warnings') %}
+            <div class="report-warnings">
+                {% for warning in cleaning_report['warnings'] %}
+                <p class="warning-text">⚠️ {{ warning }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        <!-- Data Preview -->
+        <section class="data-preview glass-panel">
+            <h2 class="section-title">Data Preview <span class="hint">(first 25 rows)</span></h2>
+            <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Revenue</th>
+                            <th>Region</th>
+                            <th>Customer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in sample_records %}
+                        <tr>
+                            <td>{{ r.date.strftime('%Y-%m-%d') if r.date else '—' }}</td>
+                            <td>{{ r.product or '—' }}</td>
+                            <td>{{ r.category or '—' }}</td>
+                            <td>{{ r.quantity | default('—') }}</td>
+                            <td>{{ '${:,.2f}'.format(r.unit_price) if r.unit_price else '—' }}</td>
+                            <td>{{ '${:,.2f}'.format(r.revenue) if r.revenue else '—' }}</td>
+                            <td>{{ r.region or '—' }}</td>
+                            <td>{{ r.customer_id or '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+{% endblock %}
