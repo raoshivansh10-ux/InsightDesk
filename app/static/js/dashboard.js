@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!response.ok) throw new Error('Failed to fetch chart data');
         const data = await response.json();
 
-        initTrendChart(data.trend);
+        initTrendChart(data.trend, data.forecast);
         initCategoryChart(data.category);
     } catch (error) {
         console.error('Error loading charts:', error);
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 let trendChartInst = null;
 let categoryChartInst = null;
 
-function initTrendChart(data) {
+function initTrendChart(data, forecastData) {
     const ctx = document.getElementById('trendChart').getContext('2d');
     
     // Create gradient fill
@@ -30,25 +30,90 @@ function initTrendChart(data) {
 
     if (trendChartInst) trendChartInst.destroy();
     
+    let labels = [...data.labels];
+    let datasets = [{
+        label: 'Historical Revenue',
+        data: [...data.revenue],
+        borderColor: COLORS.purple,
+        backgroundColor: gradientFill,
+        borderWidth: 3,
+        tension: 0.4, // Smooth curves
+        fill: true,
+        pointBackgroundColor: COLORS.purple,
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: COLORS.purple,
+        pointRadius: 4,
+        pointHoverRadius: 6
+    }];
+    
+    if (forecastData && forecastData.dates && forecastData.dates.length > 0) {
+        const histLen = data.labels.length;
+        // Append dates
+        labels = labels.concat(forecastData.dates);
+        
+        // Pad historical data with nulls so it ends
+        const paddedHist = [...data.revenue];
+        for (let i=0; i<forecastData.dates.length; i++) paddedHist.push(null);
+        datasets[0].data = paddedHist;
+        
+        // Create Forecast dataset
+        const forecastVals = Array(histLen - 1).fill(null);
+        // Connect the last historical point
+        forecastVals.push(data.revenue[histLen - 1]);
+        forecastVals.push(...forecastData.predicted_values);
+        
+        datasets.push({
+            label: 'Forecast',
+            data: forecastVals,
+            borderColor: COLORS.teal,
+            borderWidth: 2,
+            borderDash: [5, 5], // Dashed line
+            tension: 0.4,
+            fill: false,
+            pointBackgroundColor: COLORS.teal,
+            pointRadius: 0,
+            pointHoverRadius: 4
+        });
+        
+        // Add confidence bounds if available (Upper Bound)
+        if (forecastData.upper_bounds) {
+            const upperVals = Array(histLen - 1).fill(null);
+            upperVals.push(data.revenue[histLen - 1]);
+            upperVals.push(...forecastData.upper_bounds);
+            datasets.push({
+                label: 'Upper Bound',
+                data: upperVals,
+                borderColor: 'transparent',
+                backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                fill: '-1', // fill to previous dataset (Forecast)
+                pointRadius: 0,
+                pointHoverRadius: 0
+            });
+        }
+        
+        // Lower Bound
+        if (forecastData.lower_bounds) {
+            const lowerVals = Array(histLen - 1).fill(null);
+            lowerVals.push(data.revenue[histLen - 1]);
+            lowerVals.push(...forecastData.lower_bounds);
+            datasets.push({
+                label: 'Lower Bound',
+                data: lowerVals,
+                borderColor: 'transparent',
+                backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                fill: '-2', // fill to Forecast
+                pointRadius: 0,
+                pointHoverRadius: 0
+            });
+        }
+    }
+    
     trendChartInst = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: data.labels,
-            datasets: [{
-                label: 'Revenue',
-                data: data.revenue,
-                borderColor: COLORS.purple,
-                backgroundColor: gradientFill,
-                borderWidth: 3,
-                tension: 0.4, // Smooth curves
-                fill: true,
-                pointBackgroundColor: COLORS.purple,
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: COLORS.purple,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
+            labels: labels,
+            datasets: datasets
         },
         options: {
             responsive: true,

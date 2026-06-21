@@ -55,6 +55,13 @@ def dashboard(dataset_id):
         if latest_rca:
             latest_rca['anomaly'] = latest_anomaly
 
+    # Fetch or generate Forecast
+    from ..models.forecast import Forecast
+    forecast = Forecast.query.filter_by(dataset_id=dataset.id).first()
+    if not forecast:
+        from ..forecasting.engine import generate_forecast
+        forecast = generate_forecast(dataset.id)
+
     return render_template(
         'index.html',
         dataset=dataset,
@@ -62,7 +69,8 @@ def dashboard(dataset_id):
         kpis=kpis,
         health=health,
         anomalies=anomalies,
-        latest_rca=latest_rca
+        latest_rca=latest_rca,
+        forecast=forecast
     )
 
 
@@ -76,10 +84,30 @@ def chart_data(dataset_id):
 
     kpis = get_kpis(dataset.id)
     
+    from ..models.forecast import Forecast
+    forecast = Forecast.query.filter_by(dataset_id=dataset.id).first()
+    
     return jsonify({
         'trend': kpis['chart_data'],
-        'category': kpis['category_chart']
+        'category': kpis['category_chart'],
+        'forecast': forecast.forecast_json if forecast else None
     })
+
+@analytics_bp.route('/api/forecast/<int:dataset_id>/generate', methods=['POST'])
+@login_required
+def trigger_forecast(dataset_id):
+    """Manually trigger forecast generation."""
+    dataset = Dataset.query.get_or_404(dataset_id)
+    if dataset.user_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    from ..forecasting.engine import generate_forecast
+    forecast = generate_forecast(dataset.id)
+    
+    if not forecast:
+        return jsonify({'error': 'Not enough data to generate forecast'}), 400
+        
+    return jsonify({'message': 'Forecast generated', 'forecast': forecast.forecast_json})
 
 @analytics_bp.route('/api/root-cause/<int:dataset_id>/<int:anomaly_id>')
 @login_required
