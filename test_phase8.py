@@ -23,14 +23,14 @@ def test_phase8():
 
     with app.test_client() as client:
         # Setup a user
-        client.post('/auth/register', data={
+        client.post('/register', data={
             'email': 'ai@example.com',
             'business_name': 'AI Corp',
             'password': 'password123',
             'confirm_password': 'password123',
         }, follow_redirects=True)
         
-        client.post('/auth/login', data={
+        client.post('/login', data={
             'email': 'ai@example.com',
             'password': 'password123',
         }, follow_redirects=True)

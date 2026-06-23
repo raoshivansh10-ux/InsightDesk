@@ -30,32 +30,32 @@ def test_phase1():
 
     with app.test_client() as client:
         # 2. Register page loads
-        resp = client.get('/auth/register')
+        resp = client.get('/register')
         assert resp.status_code == 200, f"Register page failed: {resp.status_code}"
-        print("[OK] GET /auth/register -> 200")
+        print("[OK] GET /register -> 200")
 
         # 3. Login page loads
-        resp = client.get('/auth/login')
+        resp = client.get('/login')
         assert resp.status_code == 200, f"Login page failed: {resp.status_code}"
-        print("[OK] GET /auth/login -> 200")
+        print("[OK] GET /login -> 200")
 
         # 4. Register a user
-        resp = client.post('/auth/register', data={
+        resp = client.post('/register', data={
             'email': 'test@example.com',
             'business_name': 'Test Corp',
             'password': 'testpass123',
             'confirm_password': 'testpass123',
         }, follow_redirects=True)
         assert resp.status_code == 200
-        print("[OK] POST /auth/register -> user created")
+        print("[OK] POST /register -> user created")
 
         # 6. Login
-        resp = client.post('/auth/login', data={
+        resp = client.post('/login', data={
             'email': 'test@example.com',
             'password': 'testpass123',
         }, follow_redirects=True)
         assert resp.status_code == 200
-        print("[OK] POST /auth/login -> authenticated")
+        print("[OK] POST /login -> authenticated")
 
         # 7. Upload page accessible (logged in)
         resp = client.get('/datasets/upload')
@@ -88,14 +88,14 @@ def test_phase1():
         print("[OK] GET /datasets/1 -> 200 (detail page)")
 
         # 10. Cross-account isolation
-        client.get('/auth/logout')
-        client.post('/auth/register', data={
+        client.get('/logout')
+        client.post('/register', data={
             'email': 'other@example.com',
             'business_name': 'Other Inc',
             'password': 'otherpass123',
             'confirm_password': 'otherpass123',
         }, follow_redirects=True)
-        client.post('/auth/login', data={
+        client.post('/login', data={
             'email': 'other@example.com',
             'password': 'otherpass123',
         }, follow_redirects=True)

@@ -1,12 +1,14 @@
 """Analytics routes — dashboard view and API endpoints."""
 
-from flask import render_template, redirect, url_for, flash, jsonify
+from flask import render_template, redirect, url_for, flash, jsonify, g
 from flask_login import login_required, current_user
 from . import analytics_bp
 from .kpi_engine import get_kpis
 from .health_score import calculate_health_score
 from .anomaly_detector import detect_anomalies
 from ..models.dataset import Dataset
+from ..limiter import rate_limit
+from app.auth.decorators import require_supabase_auth
 
 @analytics_bp.route('/')
 @login_required
@@ -77,6 +79,19 @@ def dashboard(dataset_id):
     subscription = ReportSubscription.query.filter_by(user_id=current_user.id, dataset_id=dataset.id).first()
     is_subscribed = subscription.is_active if subscription else False
 
+    # Fetch Data Preview
+    from ..models.sales import SalesRecord
+    import json
+    
+    sample_records = SalesRecord.query.filter_by(dataset_id=dataset.id).limit(5).all()
+    
+    cleaning_stats = {}
+    if dataset.cleaning_report:
+        try:
+            cleaning_stats = json.loads(dataset.cleaning_report)
+        except:
+            pass
+
     return render_template(
         'index.html',
         dataset=dataset,
@@ -87,12 +102,14 @@ def dashboard(dataset_id):
         latest_rca=latest_rca,
         forecast=forecast,
         recommendations=recommendations,
-        is_subscribed=is_subscribed
+        is_subscribed=is_subscribed,
+        sample_records=sample_records,
+        cleaning_stats=cleaning_stats
     )
 
 
 @analytics_bp.route('/api/<int:dataset_id>/charts')
-@login_required
+@require_supabase_auth
 def chart_data(dataset_id):
     """API endpoint to fetch chart data for Chart.js."""
     dataset = Dataset.query.get_or_404(dataset_id)
@@ -110,8 +127,85 @@ def chart_data(dataset_id):
         'forecast': forecast.forecast_json if forecast else None
     })
 
+
+@analytics_bp.route('/api/<int:dataset_id>/metadata')
+@require_supabase_auth
+def dataset_metadata(dataset_id):
+    """API endpoint to fetch complete metadata for a dataset, including KPIs, health, anomalies, recommendations, and list of all datasets for selection."""
+    dataset = Dataset.query.get_or_404(dataset_id)
+    if dataset.user_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    # Calculate KPIs
+    kpis = get_kpis(dataset.id)
+    health = calculate_health_score(kpis['growth_pct'])
+    
+    # Detect Anomalies
+    anomalies = detect_anomalies(dataset.id)
+    
+    # Fetch or generate AI Recommendations
+    from ..models.insight import Insight
+    recommendation_insight = Insight.query.filter_by(dataset_id=dataset.id, insight_type='recommendation').order_by(Insight.generated_at.desc()).first()
+    
+    if recommendation_insight:
+        recommendations = recommendation_insight.content_json
+    else:
+        from ..ai.engine import generate_recommendations
+        recommendations = generate_recommendations(dataset.id)
+
+    # Clean up recommendations if they are in raw string format
+    if isinstance(recommendations, str):
+        import json
+        try:
+            recommendations = json.loads(recommendations)
+        except:
+            pass
+
+    # Fetch other user datasets for the dropdown
+    datasets = Dataset.query.filter_by(
+        user_id=current_user.id, status='ready'
+    ).order_by(Dataset.uploaded_at.desc()).all()
+
+    datasets_list = [{
+        'id': d.id,
+        'original_filename': d.original_filename,
+        'uploaded_at': d.uploaded_at.isoformat()
+    } for d in datasets]
+
+    return jsonify({
+        'id': dataset.id,
+        'filename': dataset.original_filename,
+        'row_count': dataset.row_count,
+        'industry_type': dataset.industry_type,
+        'kpis': {
+            'revenue': f"${kpis['total_revenue']:,.2f}",
+            'revChange': f"{kpis['growth_pct']:+.1f}%",
+            'healthScore': health,
+            'anomaliesCount': len(anomalies),
+            'orders': f"{kpis['total_orders']:,}",
+            'orderChange': f"{kpis['growth_pct']/2:+.1f}%",
+        },
+        'anomalies': [{
+            'id': a['id'],
+            'date': a['date'],
+            'metric': a['metric'],
+            'impact': f"{a['pct_diff']:+.1f}%",
+            'severity': a['severity'],
+            'message': a['message']
+        } for a in anomalies],
+        'recommendations': [{
+            'title': r.get('title', 'Recommendation'),
+            'desc': r.get('desc', 'Action details'),
+            'impact': r.get('impact', 'Medium'),
+            'action': r.get('action', 'Learn More')
+        } for r in recommendations] if isinstance(recommendations, list) else [],
+        'datasets': datasets_list
+    })
+
+
 @analytics_bp.route('/api/forecast/<int:dataset_id>/generate', methods=['POST'])
-@login_required
+@require_supabase_auth
+@rate_limit(limit=5, period=60)
 def trigger_forecast(dataset_id):
     """Manually trigger forecast generation."""
     dataset = Dataset.query.get_or_404(dataset_id)
@@ -127,7 +221,7 @@ def trigger_forecast(dataset_id):
     return jsonify({'message': 'Forecast generated', 'forecast': forecast.forecast_json})
 
 @analytics_bp.route('/api/root-cause/<int:dataset_id>/<int:anomaly_id>')
-@login_required
+@require_supabase_auth
 def get_root_cause(dataset_id, anomaly_id):
     """Fetch the Root Cause Analysis report for a specific anomaly."""
     dataset = Dataset.query.get_or_404(dataset_id)
@@ -154,8 +248,10 @@ def get_root_cause(dataset_id, anomaly_id):
         'contributors': report.contributors_json
     })
 
+
 @analytics_bp.route('/api/root-cause/<int:dataset_id>/scan', methods=['POST'])
-@login_required
+@require_supabase_auth
+@rate_limit(limit=5, period=60)
 def trigger_rca_scan(dataset_id):
     """Manually trigger an RCA scan for recent anomalies."""
     dataset = Dataset.query.get_or_404(dataset_id)
@@ -178,7 +274,8 @@ def trigger_rca_scan(dataset_id):
     return jsonify({'triggered': len(results), 'reports': results})
 
 @analytics_bp.route('/api/ai/ask', methods=['POST'])
-@login_required
+@require_supabase_auth
+@rate_limit(limit=10, period=60)
 def ask_ai():
     """Natural Language Query endpoint."""
     from flask import request
@@ -198,8 +295,9 @@ def ask_ai():
     
     return jsonify({'answer': answer})
 
+
 @analytics_bp.route('/api/reports/subscribe', methods=['POST'])
-@login_required
+@require_supabase_auth
 def toggle_subscription():
     """Toggle email subscription for the dataset."""
     from flask import request
@@ -231,7 +329,7 @@ def toggle_subscription():
 
 
 @analytics_bp.route('/api/reports/send-now', methods=['POST'])
-@login_required
+@require_supabase_auth
 def send_report_now():
     """Immediately generate and send the report."""
     from flask import request

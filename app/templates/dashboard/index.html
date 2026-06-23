@@ -360,11 +360,69 @@
             </div>
 
             <!-- Category Breakdown Chart -->
-            <div class="secondary-chart glass-panel">
+            <div class="secondary-chart glass-panel" style="grid-column: span 6;">
                 <h2 class="section-title">Revenue by Category</h2>
                 <div class="chart-container" style="height: 300px;">
                     <canvas id="categoryChart"></canvas>
                 </div>
+            </div>
+
+            <!-- Data Quality Overview -->
+            <div class="glass-panel" style="grid-column: span 6; padding: 24px;">
+                <h2 class="section-title">Data Quality Overview</h2>
+                <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span style="color: var(--text-secondary);">Total Records Processed</span>
+                        <span style="font-size: 1.2rem; font-weight: bold; color: #fff;">{{ "{:,}".format(dataset.row_count) }}</span>
+                    </div>
+                    {% if cleaning_stats.get('missing_handled') %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span style="color: var(--text-secondary);">Missing Values Imputed</span>
+                        <span style="color: var(--warning); font-weight: bold;">{{ cleaning_stats.get('missing_handled') }}</span>
+                    </div>
+                    {% endif %}
+                    {% if cleaning_stats.get('duplicates_removed') %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span style="color: var(--text-secondary);">Duplicates Removed</span>
+                        <span style="color: var(--success); font-weight: bold;">{{ cleaning_stats.get('duplicates_removed') }}</span>
+                    </div>
+                    {% endif %}
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary);">Ingestion Status</span>
+                        <span style="color: var(--success); font-weight: bold;">✅ Ready</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Preview Table -->
+            <div class="glass-panel" style="grid-column: span 12; padding: 24px; overflow-x: auto;">
+                <h2 class="section-title">Raw Data Preview</h2>
+                <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 16px; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid rgba(255,255,255,0.1); color: var(--text-secondary);">
+                            <th style="padding: 12px 8px;">Date</th>
+                            <th style="padding: 12px 8px;">Product</th>
+                            <th style="padding: 12px 8px;">Category</th>
+                            <th style="padding: 12px 8px;">Region</th>
+                            <th style="padding: 12px 8px;">Quantity</th>
+                            <th style="padding: 12px 8px;">Unit Price</th>
+                            <th style="padding: 12px 8px;">Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in sample_records %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td style="padding: 12px 8px; color: #fff;">{{ record.date }}</td>
+                            <td style="padding: 12px 8px; color: #fff;">{{ record.product }}</td>
+                            <td style="padding: 12px 8px; color: #fff;">{{ record.category }}</td>
+                            <td style="padding: 12px 8px; color: #fff;">{{ record.region }}</td>
+                            <td style="padding: 12px 8px; color: #fff;">{{ record.quantity }}</td>
+                            <td style="padding: 12px 8px; color: #fff;">${{ "{:,.2f}".format(record.unit_price) }}</td>
+                            <td style="padding: 12px 8px; color: var(--success); font-weight: bold;">${{ "{:,.2f}".format(record.revenue) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>

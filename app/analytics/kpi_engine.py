@@ -49,7 +49,7 @@ def get_kpis(dataset_id):
     span_days = (df['date'].max() - df['date'].min()).days
     if span_days > 60:
         # Aggregate monthly
-        time_series = df.set_index('date').resample('M')['revenue'].sum().reset_index()
+        time_series = df.set_index('date').resample('ME')['revenue'].sum().reset_index()
         time_series['date'] = time_series['date'].dt.strftime('%Y-%m')
     else:
         # Aggregate daily

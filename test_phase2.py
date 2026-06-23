@@ -21,14 +21,14 @@ def test_phase2():
 
     with app.test_client() as client:
         # Setup a user and dataset
-        client.post('/auth/register', data={
+        client.post('/register', data={
             'email': 'dashboard@example.com',
             'business_name': 'Dash Corp',
             'password': 'password123',
             'confirm_password': 'password123',
         }, follow_redirects=True)
         
-        client.post('/auth/login', data={
+        client.post('/login', data={
             'email': 'dashboard@example.com',
             'password': 'password123',
         }, follow_redirects=True)
@@ -76,14 +76,14 @@ def test_phase2():
         print("[OK] GET /dashboard/api/1/charts -> 200, returns JSON chart data")
 
         # Test 4: Cross-account isolation for dashboard
-        client.get('/auth/logout')
-        client.post('/auth/register', data={
+        client.get('/logout')
+        client.post('/register', data={
             'email': 'other2@example.com',
             'business_name': 'Other2 Inc',
             'password': 'password123',
             'confirm_password': 'password123',
         }, follow_redirects=True)
-        client.post('/auth/login', data={
+        client.post('/login', data={
             'email': 'other2@example.com',
             'password': 'password123',
         }, follow_redirects=True)

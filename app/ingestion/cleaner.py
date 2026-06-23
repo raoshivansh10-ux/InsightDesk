@@ -90,9 +90,11 @@ def parse_and_clean(filepath, industry_type='generic'):
 
     report['original_rows'] = len(df)
 
+    if len(df) > 100000:
+        raise ValueError("File exceeds maximum limit of 100,000 rows.")
+
     if df.empty:
-        report['warnings'].append('File is empty or has no data rows.')
-        return df, report
+        raise ValueError("File is empty or has no data rows.")
 
     # --- Column mapping ---
     col_map = _match_columns(df.columns)
@@ -106,7 +108,7 @@ def parse_and_clean(filepath, industry_type='generic'):
 
     report['columns_not_found'] = missing_required
     if missing_required:
-        report['warnings'].append(f"Could not find required columns: {missing_required}")
+        raise ValueError(f"Missing required columns: {', '.join(missing_required)}")
 
     # Rename columns to our standard schema
     rename_map = {v: k for k, v in col_map.items()}
@@ -117,6 +119,8 @@ def parse_and_clean(filepath, industry_type='generic'):
         df['date'] = _parse_dates(df['date'])
         date_nulls = df['date'].isna().sum()
         if date_nulls > 0:
+            if date_nulls > len(df) * 0.5:
+                raise ValueError("Date column parsing failed for more than 50% of rows. Ensure dates are valid.")
             report['date_parse_failures'] = int(date_nulls)
             df = df.dropna(subset=['date'])
 

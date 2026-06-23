@@ -1,0 +1,14 @@
+instance/*.db
+uploads/*
+__pycache__/
+*.pyc
+.git
+.gitignore
+.env
+Dockerfile
+docker-compose.yml
+.pytest_cache/
+.venv/
+venv/
+ERROR_AUDIT_REPORT.md
+test_*.py

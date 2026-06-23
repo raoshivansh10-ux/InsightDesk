@@ -1,6 +1,8 @@
 """SalesRecord model — individual cleaned transaction rows."""
 
 from ..extensions import db
+from sqlalchemy.orm import validates
+from datetime import datetime, date
 
 
 class SalesRecord(db.Model):
@@ -17,6 +19,18 @@ class SalesRecord(db.Model):
     region = db.Column(db.String(255), nullable=True)
     customer_id = db.Column(db.String(255), nullable=True)
     cost = db.Column(db.Float, nullable=True)
+
+    @validates('date')
+    def validate_date(self, key, value):
+        if isinstance(value, str):
+            try:
+                return datetime.strptime(value, '%Y-%m-%d').date()
+            except ValueError:
+                # If there is time or other formats, try default parsing
+                return datetime.fromisoformat(value).date()
+        elif isinstance(value, datetime):
+            return value.date()
+        return value
 
     def __repr__(self):
         return f'<SalesRecord {self.date} {self.product} ${self.revenue}>'

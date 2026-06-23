@@ -85,7 +85,7 @@
     </style>
 </head>
 <body>
-    <div class="relative min-h-screen w-full flex flex-col overflow-hidden text-white font-sans">
+    <div class="relative min-h-screen w-full flex flex-col text-white font-sans overflow-x-hidden">
         
         <!-- Video Background -->
         <video
@@ -93,7 +93,7 @@
             loop
             muted
             playsinline
-            class="absolute inset-0 w-full h-full object-cover z-0"
+            class="fixed top-0 left-0 w-full h-screen object-cover z-0"
             src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260403_050628_c4e32401-fab4-4a27-b7a8-6e9291cd5959.mp4"
         ></video>
 
@@ -128,7 +128,7 @@
         </div>
 
         <!-- Hero Content -->
-        <div class="relative z-10 flex-1 flex flex-col justify-end px-6 md:px-12 lg:px-16 pb-12 lg:pb-16 w-full">
+        <div class="relative z-10 flex-1 flex flex-col justify-end px-6 md:px-12 lg:px-16 pb-12 lg:pb-16 w-full min-h-[80vh]">
             <div class="lg:grid lg:grid-cols-2 lg:items-end gap-8">
                 
                 <!-- Left Column -->
@@ -172,6 +172,203 @@
 
             </div>
         </div>
+
+        <!-- WHY INSIGHTDESK SECTION -->
+        <section id="why-insightdesk" class="relative z-10 w-full px-6 md:px-12 lg:px-16 py-24 bg-black">
+            <div class="max-w-7xl mx-auto">
+                
+                <!-- Section Header -->
+                <div class="text-center mb-16 fade-in" data-delay="100">
+                    <h2 class="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Why InsightDesk?</h2>
+                    <h3 class="text-xl md:text-2xl text-gray-400 font-medium">
+                        Most analytics platforms tell you what happened.<br class="hidden md:block">
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">InsightDesk tells you why it happened and what to do next.</span>
+                    </h3>
+                </div>
+
+                <!-- 2-Column Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-12 items-center mb-24">
+                    
+                    <!-- Left Side: Content & Checklist -->
+                    <div class="fade-in" data-delay="300">
+                        <h3 class="text-3xl md:text-4xl font-bold mb-6 text-white leading-tight">
+                            Turn Data Into <br>Decisions
+                        </h3>
+                        <p class="text-gray-400 text-lg mb-8 leading-relaxed">
+                            Businesses generate massive amounts of data every day, but dashboards alone rarely provide answers.
+                            <br><br>
+                            InsightDesk combines business intelligence, anomaly detection, root cause analysis, forecasting, and AI-powered recommendations to help teams understand performance, identify problems, and take action with confidence.
+                        </p>
+
+                        <!-- Key Benefits -->
+                        <ul class="space-y-4 text-gray-300 font-medium">
+                            <li class="flex items-center gap-3">
+                                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 text-sm">✓</span>
+                                Automated KPI Generation
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 text-sm">✓</span>
+                                Real-Time Business Insights
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 text-sm">✓</span>
+                                Root Cause Analysis
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-sm">✓</span>
+                                AI-Powered Recommendations
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-sm">✓</span>
+                                Forecasting & Trend Prediction
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-sm">✓</span>
+                                Executive-Ready Reports
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Right Side: 4 Glass Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 fade-in" data-delay="500">
+                        
+                        <div class="liquid-glass p-6 rounded-2xl border border-white/10 hover:border-purple-500/50 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] transition-all duration-300 group">
+                            <div class="text-3xl mb-4 group-hover:scale-110 transition-transform origin-left">📊</div>
+                            <h4 class="text-lg font-bold mb-2 text-white">KPI Analytics</h4>
+                            <p class="text-gray-400 text-sm leading-relaxed">Generate meaningful business metrics automatically.</p>
+                        </div>
+                        
+                        <div class="liquid-glass p-6 rounded-2xl border border-white/10 hover:border-cyan-500/50 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all duration-300 group mt-0 sm:mt-8">
+                            <div class="text-3xl mb-4 group-hover:scale-110 transition-transform origin-left">🚨</div>
+                            <h4 class="text-lg font-bold mb-2 text-white">Anomaly Detection</h4>
+                            <p class="text-gray-400 text-sm leading-relaxed">Detect unusual business patterns before they become costly problems.</p>
+                        </div>
+
+                        <div class="liquid-glass p-6 rounded-2xl border border-white/10 hover:border-pink-500/50 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)] transition-all duration-300 group">
+                            <div class="text-3xl mb-4 group-hover:scale-110 transition-transform origin-left">🔍</div>
+                            <h4 class="text-lg font-bold mb-2 text-white">Root Cause Analysis</h4>
+                            <p class="text-gray-400 text-sm leading-relaxed">Understand exactly why performance changed.</p>
+                        </div>
+
+                        <div class="liquid-glass p-6 rounded-2xl border border-white/10 hover:border-purple-500/50 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] transition-all duration-300 group mt-0 sm:mt-8">
+                            <div class="text-3xl mb-4 group-hover:scale-110 transition-transform origin-left">🤖</div>
+                            <h4 class="text-lg font-bold mb-2 text-white">AI Recommendations</h4>
+                            <p class="text-gray-400 text-sm leading-relaxed">Receive actionable next steps backed by data.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Bottom Highlight Banner -->
+                <div class="fade-in" data-delay="700">
+                    <div class="liquid-glass border border-white/10 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
+                        <!-- Glow effect -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-pink-500/10 opacity-50"></div>
+                        
+                        <h3 class="text-2xl md:text-4xl font-bold text-white mb-10 relative z-10">
+                            "From raw spreadsheets to confident business decisions."
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 relative z-10">
+                            <div class="flex flex-col items-center justify-center">
+                                <span class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-2">50+</span>
+                                <span class="text-xs md:text-sm text-gray-400 uppercase tracking-wider font-semibold">KPIs Generated</span>
+                            </div>
+                            <div class="flex flex-col items-center justify-center">
+                                <span class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-2">95%</span>
+                                <span class="text-xs md:text-sm text-gray-400 uppercase tracking-wider font-semibold">Faster Analysis</span>
+                            </div>
+                            <div class="flex flex-col items-center justify-center">
+                                <span class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-2">AI-Powered</span>
+                                <span class="text-xs md:text-sm text-gray-400 uppercase tracking-wider font-semibold">Insights</span>
+                            </div>
+                            <div class="flex flex-col items-center justify-center">
+                                <span class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-2">Forecast</span>
+                                <span class="text-xs md:text-sm text-gray-400 uppercase tracking-wider font-semibold">Future Performance</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- FOUNDER SECTION -->
+        <section class="relative z-10 w-full px-6 md:px-12 lg:px-16 py-16 bg-black">
+            <div class="max-w-3xl mx-auto fade-in" data-delay="600">
+                <div class="liquid-glass p-8 md:p-10 rounded-3xl border border-white/10 flex flex-col md:flex-row items-center gap-8">
+                    <div class="w-24 h-24 md:w-32 md:h-32 shrink-0 rounded-full bg-gradient-to-br from-purple-600 to-cyan-500 flex items-center justify-center text-3xl font-bold shadow-lg shadow-purple-500/20">
+                        SY
+                    </div>
+                    <div class="text-center md:text-left">
+                        <h3 class="text-2xl font-bold mb-2">Built by Shivansh Yadav</h3>
+                        <p class="text-gray-400 leading-relaxed">
+                            Computer Science Engineering student and aspiring Data Analytics professional focused on building intelligent software that transforms complex business data into actionable decisions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER SECTION -->
+        <footer class="relative z-10 w-full bg-black border-t border-white/10 pt-20 pb-8 px-6 md:px-12 lg:px-16 mt-12 fade-in" data-delay="800">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                <!-- Column 1 -->
+                <div class="col-span-1 md:col-span-2 lg:col-span-1">
+                    <div class="flex items-center gap-2 mb-6">
+                        <span class="text-2xl font-bold tracking-tight">InsightDesk</span>
+                    </div>
+                    <h4 class="text-sm font-semibold text-purple-400 mb-4">AI-Powered Business Intelligence & Decision Support Platform</h4>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Transforming business data into actionable intelligence through analytics, forecasting, root cause analysis, and AI-powered recommendations.
+                    </p>
+                </div>
+
+                <!-- Column 2 -->
+                <div>
+                    <h4 class="text-white font-semibold mb-6">Quick Links</h4>
+                    <ul class="space-y-4 text-sm text-gray-400">
+                        <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Analytics Engine</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Forecasting</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 3 -->
+                <div>
+                    <h4 class="text-white font-semibold mb-6">Product</h4>
+                    <ul class="space-y-4 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Dashboard</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Reports</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">AI Insights</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Root Cause Analysis</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">API Access</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 4 -->
+                <div>
+                    <h4 class="text-white font-semibold mb-6">Connect</h4>
+                    <ul class="space-y-4 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2">GitHub</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2">LinkedIn</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2">Email</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Footer -->
+            <div class="max-w-7xl mx-auto border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-gray-500 text-sm">© 2026 InsightDesk. All rights reserved.</p>
+                <p class="text-gray-600 text-xs text-center md:text-right max-w-sm">
+                    Built with Flask, PostgreSQL, Machine Learning, and Generative AI.
+                </p>
+            </div>
+        </footer>
+
     </div>
 
     <!-- Animation Logic script mimicking the React components -->
