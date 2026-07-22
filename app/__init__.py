@@ -110,6 +110,11 @@ def create_app(config_name=None):
         from .scheduler import start_scheduler
         start_scheduler(app)
 
+    @app.route('/public/<path:filename>')
+    def serve_public(filename):
+        from flask import send_from_directory
+        return send_from_directory(os.path.join(app.root_path, '../public'), filename)
+
     @app.route('/')
     def index():
         return render_template('landing.html')

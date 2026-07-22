@@ -7,24 +7,24 @@
 
 /* ── Design Tokens ── */
 :root {
-  --bg-main: #060813;
-  --bg-surface: rgba(17, 25, 40, 0.65);
-  --bg-surface-hover: rgba(17, 25, 40, 0.80);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-hover: rgba(255, 255, 255, 0.15);
+  --bg-main: #051822;
+  --bg-surface: rgba(45, 56, 62, 0.65); /* Translucent #2D383E */
+  --bg-surface-hover: rgba(45, 56, 62, 0.80);
+  --glass-border: rgba(212, 201, 199, 0.08); /* #D4C9C7 border */
+  --glass-border-hover: rgba(212, 201, 199, 0.15);
 
-  --accent: #8b5cf6;
-  --accent-rgb: 139, 92, 246;
-  --accent-secondary: #06b6d4;
-  --accent-secondary-rgb: 6, 182, 212;
-  --accent-pink: #ec4899;
+  --accent: #AA7452; /* Terracotta */
+  --accent-rgb: 170, 116, 82;
+  --accent-secondary: #7C5841; /* Brown */
+  --accent-secondary-rgb: 124, 88, 65;
+  --accent-pink: #969A9E; /* Light grayish blue */
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
 
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  --text-primary: #D4C9C7; /* Off-white */
+  --text-secondary: #969A9E; /* Light grayish blue */
+  --text-muted: #2D383E; /* Dark grayish blue */
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -38,8 +38,8 @@
 body {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: var(--bg-main);
-  background-image: radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.04) 0%, transparent 50%);
+  background-image: radial-gradient(circle at 20% 20%, rgba(170, 116, 82, 0.06) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(124, 88, 65, 0.04) 0%, transparent 50%);
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.5;
@@ -47,11 +47,11 @@ body {
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(212, 201, 199, 0.1); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 a { color: var(--accent); text-decoration: none; transition: var(--transition); }
-a:hover { color: #a78bfa; }
+a:hover { color: #d4c9c7; }
 
 /* ── Glass Panel ── */
 .glass-panel {

@@ -10,6 +10,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
+    <!-- Lenis Smooth Scroll CSS & JS CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.5/dist/lenis.css">
+    <script src="https://unpkg.com/lenis@1.1.5/dist/lenis.min.js"></script>
+    
     <!-- Tailwind CSS (CDN for landing page isolation) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -18,6 +22,50 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        black: '#120C0A',
+                        white: '#F5F1EA',
+                        purple: {
+                            300: '#F5F1EA',
+                            400: '#D7C9B8',
+                            500: '#B2967D',
+                            600: '#7D5A44',
+                            900: '#4A342A',
+                            950: '#251B16',
+                        },
+                        red: {
+                            500: '#B2967D',
+                            600: '#7D5A44',
+                            950: '#251B16',
+                        },
+                        cyan: {
+                            400: '#D7C9B8',
+                            500: '#B2967D',
+                            600: '#7D5A44',
+                            900: '#4A342A',
+                        },
+                        pink: {
+                            400: '#B2967D',
+                            500: '#7D5A44',
+                            900: '#4A342A',
+                        },
+                        emerald: {
+                            400: '#D7C9B8',
+                            500: '#B2967D',
+                        },
+                        blue: {
+                            400: '#D7C9B8',
+                            500: '#B2967D',
+                        },
+                        gray: {
+                            300: '#D7C9B8',
+                            400: '#B2967D',
+                            500: '#7D5A44',
+                        },
+                        neutral: {
+                            900: '#251B16',
+                        }
                     }
                 }
             }
@@ -25,26 +73,46 @@
     </script>
     
     <style>
+        html.lenis, html.lenis body {
+            height: auto;
+        }
+        
+        .lenis-smooth {
+            scroll-behavior: auto !important;
+        }
+        
+        .lenis-smooth [data-lenis-prevent] {
+            overscroll-behavior: contain;
+        }
+        
+        .lenis-stopped {
+            overflow: hidden;
+        }
+        
+        .lenis-scrolling iframe {
+            pointer-events: none;
+        }
+ 
         body {
             font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            background-color: black;
-            color: white;
+            background-color: #120C0A; /* Darkest Espresso */
+            color: #F5F1EA; /* Linen */
             margin: 0;
         }
-
+ 
         .liquid-glass {
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(37, 27, 22, 0.4); /* Translucent Espresso */
             background-blend-mode: luminosity;
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
             border: none;
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 1px 1px rgba(245, 241, 234, 0.1); /* Linen-based subtle glow */
             position: relative;
             overflow: hidden;
         }
-
+ 
         .liquid-glass::before {
             content: '';
             position: absolute;
@@ -52,15 +120,15 @@
             border-radius: inherit;
             padding: 1.4px;
             background: linear-gradient(180deg,
-                rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 20%,
-                rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
-                rgba(255,255,255,0.1) 80%, rgba(255,255,255,0.3) 100%);
+                rgba(245,241,234,0.3) 0%, rgba(245,241,234,0.1) 20%,
+                rgba(245,241,234,0) 40%, rgba(245,241,234,0) 60%,
+                rgba(245,241,234,0.1) 80%, rgba(245,241,234,0.3) 100%);
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             pointer-events: none;
         }
-
+ 
         /* Animation Classes */
         .fade-in {
             opacity: 0;
@@ -69,7 +137,7 @@
         .fade-in.visible {
             opacity: 1;
         }
-
+ 
         .char-span {
             display: inline-block;
             opacity: 0;
@@ -87,27 +155,32 @@
 <body>
     <div class="relative min-h-screen w-full flex flex-col text-white font-sans overflow-x-hidden">
         
-        <!-- Video Background -->
-        <video
-            autoplay
-            loop
-            muted
-            playsinline
-            class="fixed top-0 left-0 w-full h-screen object-cover z-0"
-            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260403_050628_c4e32401-fab4-4a27-b7a8-6e9291cd5959.mp4"
-        ></video>
+        <!-- Cinematic Full-Screen Fixed Background Video -->
+        <div id="hero-bg-container" class="fixed inset-0 w-full h-screen origin-center select-none pointer-events-none z-0">
+            <video 
+                src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260525_070034_60e5670b-6bb0-402b-a6c1-c9a8c05ae3a4.mp4" 
+                class="w-full h-full object-cover opacity-90" 
+                style="filter: contrast(1.1) brightness(0.95);"
+                autoplay 
+                loop 
+                muted 
+                playsinline>
+            </video>
+            <!-- Subtle dark cinematic overlay vignette (35-45% opacity) -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/35 z-10"></div>
+        </div>
 
-        <!-- Navbar Container -->
-        <div class="relative z-10 w-full px-6 md:px-12 lg:px-16 pt-6">
-            <nav class="liquid-glass rounded-xl px-4 py-2 flex items-center justify-between">
+        <!-- Navbar Container (Fixed at top) -->
+        <div id="main-navbar-container" class="fixed top-4 left-0 w-full px-6 md:px-12 lg:px-16 z-50 transition-all duration-300">
+            <div id="main-navbar-inner" class="px-6 py-4 flex items-center justify-between transition-all duration-500 rounded-2xl bg-transparent border border-transparent">
                 <div class="flex items-center gap-2">
-                    <span class="text-2xl font-semibold tracking-tight">InsightDesk</span>
+                    <span class="text-2xl font-semibold tracking-tight text-white">InsightDesk</span>
                 </div>
                 
-                <div class="hidden md:flex items-center gap-8 text-sm">
-                    <a href="#features" class="hover:text-gray-300 transition-colors">Features</a>
-                    <a href="#about" class="hover:text-gray-300 transition-colors">Engine</a>
-                    <a href="#pricing" class="hover:text-gray-300 transition-colors">Pricing</a>
+                <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+                    <a href="#core-vectors" class="text-gray-300 hover:text-white transition-colors">Vectors</a>
+                    <a href="#why-insightdesk" class="text-gray-300 hover:text-white transition-colors">Why Us</a>
+                    <a href="#founder" class="text-gray-300 hover:text-white transition-colors">Founder</a>
                 </div>
 
                 <div class="flex gap-4">
@@ -118,61 +191,124 @@
                     {% else %}
                         <a href="{{ url_for('auth.login') }}" class="hidden md:inline-block text-white px-4 py-2 rounded-lg text-sm font-medium hover:text-gray-300 transition-colors">
                             Sign In
-                        </a>
-                        <a href="{{ url_for('auth.register') }}" class="bg-white text-black px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors inline-block">
+                          </a>
+                        <a href="{{ url_for('auth.register') }}" class="bg-red-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-red-500 transition-all shadow-[0_0_20px_rgba(178,150,125,0.25)] border border-red-500/20 inline-block">
                             Get Started
                         </a>
                     {% endif %}
                 </div>
-            </nav>
-        </div>
+            </div>
+        </div>        <!-- Hero Content (Centered Premium Panel) -->
+        <div id="hero-content-panel" class="relative z-20 flex-1 flex flex-col justify-center items-center px-6 text-center max-w-4xl mx-auto w-full h-screen transition-all duration-1000">
+            
+            <!-- Glowing Badge -->
+            <div class="inline-flex items-center gap-2 bg-red-950/20 border border-red-500/25 px-4 py-1.5 rounded-full text-[10px] font-bold text-red-500 uppercase tracking-widest mb-4 shadow-[0_0_15px_rgba(178,150,125,0.15)]">
+                ⚡ Neural Synthesis Engine v4.0
+            </div>
 
-        <!-- Hero Content -->
-        <div class="relative z-10 flex-1 flex flex-col justify-end px-6 md:px-12 lg:px-16 pb-12 lg:pb-16 w-full min-h-[80vh]">
-            <div class="lg:grid lg:grid-cols-2 lg:items-end gap-8">
-                
-                <!-- Left Column -->
-                <div class="flex flex-col">
-                    <h1 id="animated-heading" class="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-normal mb-4" style="letter-spacing: -0.04em;">
-                        Stop Guessing.<br>Start Deciding.
-                    </h1>
+            <!-- Headline -->
+            <h1 id="hero-headline" class="text-5xl sm:text-7xl md:text-8xl font-black uppercase tracking-tighter leading-[0.9] text-white mb-6">
+                The Future <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-red-100 to-red-500">
+                    Starts Here
+                </span>
+            </h1>
 
-                    <div class="fade-in" data-delay="800">
-                        <p class="text-base md:text-lg text-gray-300 mb-5 max-w-xl">
-                            An AI-powered Business Intelligence platform that doesn't just show you what happened—it tells you why.
-                        </p>
-                    </div>
+            <!-- Subheading -->
+            <p id="hero-subheading" class="text-gray-400 text-base sm:text-lg md:text-xl max-w-xl font-light leading-relaxed tracking-wide mb-8">
+                Experience next-generation AI-powered innovation.
+            </p>
 
-                    <div class="fade-in flex flex-wrap gap-4" data-delay="1200">
-                        {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('analytics.index') }}" class="bg-white text-black px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
-                                Go to Dashboard
-                            </a>
-                        {% else %}
-                            <a href="{{ url_for('auth.register') }}" class="bg-white text-black px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
-                                Start Free Trial
-                            </a>
-                            <a href="#features" class="liquid-glass border border-white/20 text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-black transition-colors">
-                                Explore Features
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Right Column -->
-                <div class="flex items-end justify-start lg:justify-end mt-8 lg:mt-0">
-                    <div class="fade-in" data-delay="1400">
-                        <div class="liquid-glass border border-white/20 px-6 py-3 rounded-xl">
-                            <span class="text-lg md:text-xl lg:text-2xl font-light">
-                                KPIs. Anomalies. Insights.
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
+            <!-- Action Buttons -->
+            <div id="hero-buttons" class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                <a href="{{ url_for('auth.register') }}" class="w-full sm:w-auto bg-red-600 hover:bg-red-500 text-white px-8 py-4 rounded-xl font-semibold uppercase tracking-widest text-xs transition-all shadow-[0_0_25px_rgba(178,150,125,0.25)] hover:shadow-[0_0_35px_rgba(178,150,125,0.45)] border border-red-500/20 text-center">
+                    Get Started
+                </a>
+                <a href="#core-vectors" class="w-full sm:w-auto bg-white/[0.03] hover:bg-white/[0.08] text-white px-8 py-4 rounded-xl font-semibold uppercase tracking-widest text-xs transition-all border border-white/10 hover:border-white/20 text-center flex items-center justify-center gap-2">
+                    Learn More →
+                </a>
             </div>
         </div>
 
+        <!-- Scrollable Content Wrapper - Slides up over fixed Hero -->
+        <div class="relative z-20 bg-black w-full border-t border-white/5 shadow-[0_-30px_60px_rgba(0,0,0,0.95)] mt-[100vh]">
+            
+            <!-- Core Strategic Vectors (Second Section) -->
+            <section id="core-vectors" class="relative z-10 w-full py-32 px-4 sm:px-6 md:px-12 lg:px-16 bg-black overflow-hidden border-t border-white/5">
+                <div class="absolute inset-0 pointer-events-none z-0 opacity-[0.03]" style="background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px); background-size: 32px 32px;"></div>
+                
+                <div class="max-w-7xl mx-auto relative z-10">
+                    <!-- Section Header -->
+                    <div class="text-center mb-20">
+                        <div class="inline-flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-3.5 py-1 rounded-full text-[9px] font-bold text-red-500 uppercase tracking-widest mb-4 shadow-[0_0_15px_rgba(239,68,68,0.05)]">
+                            ⚡ Strategic Core
+                        </div>
+                        <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-4 uppercase">
+                            Core Technology <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-white">Vectors</span>
+                        </h2>
+                        <p class="text-gray-400 text-sm md:text-base max-w-lg mx-auto font-light leading-relaxed">
+                            A high-performance suite engineered to convert raw business datasets into strategic market advantages.
+                        </p>
+                    </div>
+
+                    <!-- Card Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Card 1: AI -->
+                        <div class="glass-vector-card opacity-0 translate-y-10 relative bg-neutral-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-2xl transition-all duration-500 cursor-pointer flex flex-col h-full overflow-hidden group hover:border-red-500/30 hover:shadow-[0_0_30px_rgba(178,150,125,0.15)] hover:-translate-y-2">
+                            <div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="w-10 h-10 rounded-xl bg-white/[0.03] group-hover:bg-red-500/10 flex items-center justify-center mb-6 shrink-0 transition-colors border border-white/5 group-hover:border-red-500/20 text-red-500 text-xl font-bold flex items-center justify-center">
+                                AI
+                            </div>
+                            <div class="text-[9px] uppercase tracking-widest font-mono text-red-500/80 font-bold mb-1">Cognitive Inference</div>
+                            <h3 class="text-xl font-bold text-white mb-3 group-hover:text-red-400 transition-colors">AI</h3>
+                            <p class="text-gray-400 text-xs leading-relaxed font-light font-sans mt-auto">Self-learning algorithms mapping anomalies and diagnosing root causes in high-dimensional business data streams.</p>
+                        </div>
+                        <!-- Card 2: Automation -->
+                        <div class="glass-vector-card opacity-0 translate-y-10 relative bg-neutral-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-2xl transition-all duration-500 cursor-pointer flex flex-col h-full overflow-hidden group hover:border-red-500/30 hover:shadow-[0_0_30px_rgba(178,150,125,0.15)] hover:-translate-y-2" style="transition-delay: 150ms;">
+                            <div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="w-10 h-10 rounded-xl bg-white/[0.03] group-hover:bg-red-500/10 flex items-center justify-center mb-6 shrink-0 transition-colors border border-white/5 group-hover:border-red-500/20 text-red-500 text-xl font-bold flex items-center justify-center">
+                                AU
+                            </div>
+                            <div class="text-[9px] uppercase tracking-widest font-mono text-red-500/80 font-bold mb-1">Zero-Touch Pipelines</div>
+                            <h3 class="text-xl font-bold text-white mb-3 group-hover:text-red-400 transition-colors">Automation</h3>
+                            <p class="text-gray-400 text-xs leading-relaxed font-light font-sans mt-auto">Autonomous spreadsheet parsing, duplicate cleaning, and scheduled executive reporting dispatch.</p>
+                        </div>
+                        <!-- Card 3: Innovation -->
+                        <div class="glass-vector-card opacity-0 translate-y-10 relative bg-neutral-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-2xl transition-all duration-500 cursor-pointer flex flex-col h-full overflow-hidden group hover:border-red-500/30 hover:shadow-[0_0_30px_rgba(178,150,125,0.15)] hover:-translate-y-2" style="transition-delay: 300ms;">
+                            <div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="w-10 h-10 rounded-xl bg-white/[0.03] group-hover:bg-red-500/10 flex items-center justify-center mb-6 shrink-0 transition-colors border border-white/5 group-hover:border-red-500/20 text-red-500 text-xl font-bold flex items-center justify-center">
+                                IN
+                            </div>
+                            <div class="text-[9px] uppercase tracking-widest font-mono text-red-500/80 font-bold mb-1">Predictive Models</div>
+                            <h3 class="text-xl font-bold text-white mb-3 group-hover:text-red-400 transition-colors">Innovation</h3>
+                            <p class="text-gray-400 text-xs leading-relaxed font-light font-sans mt-auto">Next-generation seasonal forecasting engine modeling trends and simulating strategic market decisions.</p>
+                        </div>
+                        <!-- Card 4: Performance -->
+                        <div class="glass-vector-card opacity-0 translate-y-10 relative bg-neutral-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-2xl transition-all duration-500 cursor-pointer flex flex-col h-full overflow-hidden group hover:border-red-500/30 hover:shadow-[0_0_30px_rgba(178,150,125,0.15)] hover:-translate-y-2" style="transition-delay: 450ms;">
+                            <div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/10 group-hover:border-red-500/30 transition-colors"></div>
+                            <div class="w-10 h-10 rounded-xl bg-white/[0.03] group-hover:bg-red-500/10 flex items-center justify-center mb-6 shrink-0 transition-colors border border-white/5 group-hover:border-red-500/20 text-red-500 text-xl font-bold flex items-center justify-center">
+                                PE
+                            </div>
+                            <div class="text-[9px] uppercase tracking-widest font-mono text-red-500/80 font-bold mb-1">Accelerated Ingestion</div>
+                            <h3 class="text-xl font-bold text-white mb-3 group-hover:text-red-400 transition-colors">Performance</h3>
+                            <p class="text-gray-400 text-xs leading-relaxed font-light font-sans mt-auto">Hardware-optimized database ingestion layers delivering real-time metric diagnostics at scale.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+ 
         <!-- WHY INSIGHTDESK SECTION -->
         <section id="why-insightdesk" class="relative z-10 w-full px-6 md:px-12 lg:px-16 py-24 bg-black">
             <div class="max-w-7xl mx-auto">
@@ -293,8 +429,10 @@
             </div>
         </section>
 
+
+
         <!-- FOUNDER SECTION -->
-        <section class="relative z-10 w-full px-6 md:px-12 lg:px-16 py-16 bg-black">
+        <section id="founder" class="relative z-10 w-full px-6 md:px-12 lg:px-16 py-16 bg-black">
             <div class="max-w-3xl mx-auto fade-in" data-delay="600">
                 <div class="liquid-glass p-8 md:p-10 rounded-3xl border border-white/10 flex flex-col md:flex-row items-center gap-8">
                     <div class="w-24 h-24 md:w-32 md:h-32 shrink-0 rounded-full bg-gradient-to-br from-purple-600 to-cyan-500 flex items-center justify-center text-3xl font-bold shadow-lg shadow-purple-500/20">
@@ -368,12 +506,48 @@
                 </p>
             </div>
         </footer>
-
+        </div> <!-- End of Scrollable Content Wrapper -->
     </div>
 
     <!-- Animation Logic script mimicking the React components -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Lenis Smooth Scrolling
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Apple-style easeOutExpo
+                orientation: 'vertical',
+                gestureOrientation: 'vertical',
+                smoothWheel: true,
+                wheelMultiplier: 1.0,
+                touchMultiplier: 1.5,
+                infinite: false,
+            });
+
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+
+            requestAnimationFrame(raf);
+
+            // Bind anchor click smooth scrolling via Lenis
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        lenis.scrollTo(target, {
+                            offset: 0,
+                            duration: 1.2,
+                            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                        });
+                    }
+                });
+            });
+
             // 1. Animated Heading
             const heading = document.getElementById('animated-heading');
             if (heading) {
@@ -423,6 +597,72 @@
                     el.classList.add('visible');
                 }, delay);
             });
+
+            // 3. Futuristic Background Video References
+            const bgContainer = document.getElementById('hero-bg-container');
+            const heroContent = document.getElementById('hero-content-panel');
+            const navbarContainer = document.getElementById('main-navbar-container');
+            const navbarInner = document.getElementById('main-navbar-inner');
+
+            // 4. Scroll-Triggered Parallax, Scaling, Blurring, and Fading
+            window.addEventListener('scroll', () => {
+                const scrollY = window.scrollY;
+                const vh = window.innerHeight;
+                
+                const scrollProgress = Math.max(0, Math.min(1, scrollY / vh));
+                
+                const scale = 1.0 - (scrollProgress * 0.1); // 1.0 -> 0.9
+                const blur = scrollProgress * 12; // 0px -> 12px
+                const translateY = scrollProgress * 15; // 15% parallax shift
+                
+                if (bgContainer) {
+                    bgContainer.style.transform = `scale(${scale}) translateY(${translateY}%)`;
+                    bgContainer.style.filter = `blur(${blur}px)`;
+                }
+
+                if (heroContent) {
+                    const textProgress = Math.max(0, Math.min(1, scrollY / (vh * 0.5))); // Complete fade in first 50%
+                    const textOpacity = 1 - textProgress;
+                    const textY = -textProgress * 80; // Shift up by 80px
+                    
+                    heroContent.style.opacity = textOpacity;
+                    heroContent.style.transform = `translateY(${textY}px)`;
+                }
+
+                if (navbarInner) {
+                    if (scrollY > 20) {
+                        navbarInner.className = "px-6 py-4 flex items-center justify-between transition-all duration-500 rounded-2xl bg-black/75 border border-white/10 backdrop-blur-xl shadow-2xl shadow-black/60";
+                    } else {
+                        navbarInner.className = "px-6 py-4 flex items-center justify-between transition-all duration-500 rounded-2xl bg-transparent border border-transparent";
+                    }
+                }
+            });
+
+            // 5. Staggered Glass Cards Entry Animation (Intersection Observer)
+            const cards = document.querySelectorAll('.glass-vector-card');
+            if (cards.length > 0) {
+                const observerOptions = {
+                    threshold: 0.1,
+                    rootMargin: "0px 0px -50px 0px"
+                };
+
+                const observer = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.remove('opacity-0', 'translate-y-10');
+                            entry.target.classList.add('opacity-100', 'translate-y-0');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, observerOptions);
+
+                cards.forEach(card => {
+                    observer.observe(card);
+                });
+            }
+
+
+
         });
     </script>
 </body>
