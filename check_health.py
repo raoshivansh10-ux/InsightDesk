@@ -29,6 +29,7 @@ def main():
     print("             InsightDesk Health Status            ")
     print("==================================================")
     
+    
     frontend_up = check_url("http://localhost:5173/", "Frontend")
     backend_up = check_url("http://localhost:5000/", "Backend")
     
